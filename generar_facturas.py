@@ -97,21 +97,43 @@ def create_client_pdf(cliente, df_cliente, output_path):
         elif 'Autos' in actual_col: col_mapping[actual_col] = 'Autos'
         elif 'PROCURADOR' in actual_col: col_mapping[actual_col] = 'Procurador'
         elif 'Numero' in actual_col or 'factura' in actual_col: col_mapping[actual_col] = 'Fra.'
-        elif 'Suma' in actual_col or 'Total' in actual_col: col_mapping[actual_col] = 'Total'
+        elif 'Suma' in actual_col or 'Total' in actual_col: col_mapping[actual_col] = 'Total Factura'
 
     df_display = df_cliente.rename(columns=col_mapping)
-    desired_order = ['Fecha', 'Contrario', 'NIF', 'Exp.', 'Cuantía', 'Procedimiento', 'Autos', 'Procurador', 'Fra.', 'Total']
+    desired_order = ['Fecha', 'Contrario', 'NIF', 'Exp.', 'Cuantía', 'Procedimiento', 'Autos', 'Procurador', 'Fra.', 'Total Factura']
     df_display = df_display[[col for col in desired_order if col in df_display.columns]]
     
-    # Formatear números
-    for col in ['Cuantía', 'Total']:
-        if col in df_display.columns:
-            df_display[col] = pd.to_numeric(df_display[col], errors='coerce')
-            df_display[col] = df_display[col].apply(lambda x: f"{float(x):,.2f} \u20ac" if pd.notnull(x) else "0.00 \u20ac")
+    # Función para limpiar cuantía (ej: "34.594,35 €" -> 34594.35)
+    def clean_currency(value):
+        if pd.isna(value) or value == "": return 0.0
+        if isinstance(value, (int, float)): return float(value)
+        # Quitar €, espacios, y puntos de miles, cambiar coma por punto
+        clean_val = str(value).replace('€', '').replace('', '').strip()
+        clean_val = clean_val.replace('.', '').replace(',', '.')
+        try:
+            return float(clean_val)
+        except:
+            return 0.0
+
+    # Formatear números y asegurar que se lean bien
+    if 'Cuantía' in df_display.columns:
+        df_display['Cuantía'] = df_display['Cuantía'].apply(clean_currency)
+        df_display['Cuantía'] = df_display['Cuantía'].apply(lambda x: f"{float(x):,.2f} \u20ac" if pd.notnull(x) else "0.00 \u20ac")
+
+    if 'Total Factura' in df_display.columns:
+        # El total ya suele venir como número pero por si acaso aplicamos limpieza similar si es string
+        df_display['Total Factura'] = df_display['Total Factura'].apply(clean_currency)
+        df_display['Total Factura'] = df_display['Total Factura'].apply(lambda x: f"{float(x):,.2f} \u20ac" if pd.notnull(x) else "0.00 \u20ac")
+
+    # Formatear expedientes (quitar .0)
+    if 'Exp.' in df_display.columns:
+        df_display['Exp.'] = pd.to_numeric(df_display['Exp.'], errors='coerce').fillna(0).astype(int).astype(str)
+        # Si era 0 (porque falló el numeric), poner vacío
+        df_display.loc[df_display['Exp.'] == '0', 'Exp.'] = ""
 
     # Formatear fechas
     if 'Fecha' in df_display.columns:
-        df_display['Fecha'] = pd.to_datetime(df_display['Fecha'], errors='coerce')
+        df_display['Fecha'] = pd.to_datetime(df_display['Fecha'], errors='coerce', dayfirst=True)
         df_display['Fecha'] = df_display['Fecha'].dt.strftime('%d/%m/%Y').fillna("")
 
     # Convertir encabezados y celdas a Paragraph para permitir wrap
@@ -123,25 +145,27 @@ def create_client_pdf(cliente, df_cliente, output_path):
         formatted_data.append(formatted_row)
     
     # Sumatorio
-    total_val = df_cliente.iloc[:, -1].sum()
+    # Usamos los datos originales del df_cliente para el sumatorio real si es posible, 
+    # o recalculamos con clean_currency
+    total_val = df_cliente.iloc[:, -1].apply(clean_currency).sum()
     empty_row = [""] * (len(df_display.columns) - 1) + [f"{total_val:,.2f} \u20ac"]
     empty_row[0] = "TOTAL"
     # El sumatorio también debe ser Paragraph para consistencia
     total_row = [Paragraph(str(cell), body_style) for cell in empty_row]
     formatted_data.append(total_row)
     
-    # Definir anchos de columna (Total ~25.7cm)
+    # Definir anchos de columna (Total ~25.7cm para A4 Horizontal)
     col_widths = [
         2.0*cm, # Fecha
-        4.5*cm, # Contrario
+        3.8*cm, # Contrario
         2.0*cm, # NIF
-        1.8*cm, # Exp.
-        1.8*cm, # Cuantía
-        4.5*cm, # Procedimiento
-        1.8*cm, # Autos
-        4.5*cm, # Procurador
+        1.7*cm, # Exp.
+        2.2*cm, # Cuantía (Más ancha)
+        3.8*cm, # Procedimiento
+        1.7*cm, # Autos
+        3.8*cm, # Procurador
         1.5*cm, # Fra.
-        1.3*cm  # Total
+        3.2*cm  # Total Factura (Mucho más ancha para evitar cortes)
     ]
     
     # Tabla
