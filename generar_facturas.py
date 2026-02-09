@@ -131,17 +131,23 @@ def create_client_pdf(cliente, df_cliente, output_path):
         # Si era 0 (porque falló el numeric), poner vacío
         df_display.loc[df_display['Exp.'] == '0', 'Exp.'] = ""
 
-    # Formatear fechas
+    # Formatear fechas (manejar puntos como separadores)
     if 'Fecha' in df_display.columns:
+        # Primero convertir a string y reemplazar puntos por barras
+        df_display['Fecha'] = df_display['Fecha'].astype(str).str.replace('.', '/', regex=False)
+        # Intentar parsear
         df_display['Fecha'] = pd.to_datetime(df_display['Fecha'], errors='coerce', dayfirst=True)
+        # Mostrar como DD/MM/YYYY
         df_display['Fecha'] = df_display['Fecha'].dt.strftime('%d/%m/%Y').fillna("")
 
     # Convertir encabezados y celdas a Paragraph para permitir wrap
-    header_row = [Paragraph(col, header_style) for col in df_display.columns]
+    header_row = [Paragraph(str(col), header_style) for col in df_display.columns]
     
     formatted_data = [header_row]
     for row in df_display.values.tolist():
-        formatted_row = [Paragraph(str(cell), body_style) for cell in row]
+        # Limpiar 'nan' de cualquier columna
+        row_clean = ["" if pd.isna(cell) or str(cell).lower() == 'nan' else str(cell) for cell in row]
+        formatted_row = [Paragraph(cell, body_style) for cell in row_clean]
         formatted_data.append(formatted_row)
     
     # Sumatorio
