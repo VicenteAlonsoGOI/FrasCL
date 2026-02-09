@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Excel y PDFs
+PDFs_Generados/
+PROYECTO FrasCL/
+*.xlsx
+~$*.xlsx
+*.pdf
+
+# Otros
+.gemini/
+.agent/
+task.md
+implementation_plan.md
+walkthrough.md
