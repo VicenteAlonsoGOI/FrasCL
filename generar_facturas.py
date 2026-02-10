@@ -22,7 +22,7 @@ def generar_pdfs():
     clientes = df['CLIENTE'].unique()
     
     # Carpeta solicitada
-    output_folder = 'PROYECTO FrasCL'
+    output_folder = 'Facturas_Generadas'
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 

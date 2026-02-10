@@ -12,12 +12,12 @@ Este manual explica cómo utilizar la herramienta para generar informes PDF de f
 Sigue estos pasos sencillos:
 
 1.  **Abrir la carpeta compartida:** Navega en tu explorador de archivos hasta:
-    `\\srv-gesico\Proyectos IA\Herramienta_FrasCL`
+    `\\srv-gesico\Proyectos IA Vicente\PROYECTO FrasCL`
 2.  **Ejecutar el proceso:**
     - Busca el archivo llamado **`INICIAR_AUTOMATIZACION.bat`** (puede aparecer solo como `INICIAR_AUTOMATIZACION` con un icono de dos engranajes).
     - Haz **doble clic** sobre él. Se abrirá una ventana negra que te informará del progreso.
 3.  **Resultado:**
-    - El programa creará automáticamente una carpeta llamada `PROYECTO FrasCL` dentro de esa misma carpeta de red.
+    - El programa creará automáticamente una carpeta llamada **`Facturas_Generadas`** dentro de esa misma carpeta de red.
     - Dentro de esa carpeta encontrarás un archivo PDF por cada cliente.
 
 ## ⚠️ Notas Importantes
