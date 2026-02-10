@@ -29,19 +29,36 @@ def create_manual():
 
 def create_tech_doc():
     doc = Document()
-    doc.add_heading('Documentación Técnica: Proyecto FrasCL', 0)
+    doc.add_heading('Documentación Técnica: Sistema de Automatización FrasCL', 0)
     
-    doc.add_heading('Tecnologías y Dependencias', level=1)
-    doc.add_paragraph('- Lenguaje: Python 3.12+')
-    doc.add_paragraph('- Librerías: pandas, openpyxl, reportlab, python-docx.')
+    doc.add_heading('1. Arquitectura del Sistema', level=1)
+    doc.add_paragraph('El sistema sigue un flujo de procesamiento por lotes lineal:')
+    doc.add_paragraph('1. Entrada: Lectura de archivo Excel (.xlsx) mediante pandas.', style='List Number')
+    doc.add_paragraph('2. Transformación: Limpieza de datos (normalización de moneda, fechas y tipos numéricos).', style='List Number')
+    doc.add_paragraph('3. Agrupación: Segmentación de datos por el campo CLIENTE.', style='List Number')
+    doc.add_paragraph('4. Generación: Creación de documentos PDF mediante el motor ReportLab.', style='List Number')
+    doc.add_paragraph('5. Persistencia: Almacenamiento organizado en carpetas locales y/o de red.', style='List Number')
     
-    doc.add_heading('Estructura del Proyecto', level=1)
-    doc.add_paragraph('- generar_facturas.py: Script principal.')
-    doc.add_paragraph('- INICIAR_AUTOMATIZACION.bat: Lanzador para usuarios.')
-    doc.add_paragraph('- Facturas_Generadas/: Carpeta de salida.')
+    doc.add_heading('2. Detalles de Implementación (generar_facturas.py)', level=1)
+    doc.add_heading('2.1 Procesamiento de Moneda (clean_currency)', level=2)
+    doc.add_paragraph('Se implementó una lógica de normalización de strings para manejar importes con € y formatos europeos:')
+    doc.add_paragraph('- Elimina símbolos y espacios.')
+    doc.add_paragraph('- Normaliza separadores de miles y decimales.')
+    doc.add_paragraph('- Gestiona valores nulos devolviendo 0.0.')
     
-    doc.add_heading('Lógica de Procesamiento', level=1)
-    doc.add_paragraph('El sistema limpia importes (moneda española), maneja fechas con puntos o barras, y utiliza ReportLab con Word Wrap para generar los PDFs en formato horizontal.')
+    doc.add_heading('2.2 Gestión de Fechas', level=2)
+    doc.add_paragraph('Resuelve inconsistencias de formato (puntos vs barras) estandarizando a DD/MM/YYYY.')
+    
+    doc.add_heading('2.3 Generación de PDF y Layout', level=2)
+    doc.add_paragraph('- Orientación Landscape (A4).')
+    doc.add_paragraph('- Word Wrap: Salto de línea automático para textos largos.')
+    doc.add_paragraph('- Anchos Fijos: Garantizan integridad visual en la impresión.')
+    
+    doc.add_heading('3. Lanzador Automatizado (.bat)', level=1)
+    doc.add_paragraph('Incluye soporte para rutas UNC (red) y auto-instalación de librerías.')
+    
+    doc.add_heading('4. Mantenimiento', level=1)
+    doc.add_paragraph('Para actualizar el programa con nuevos datos, simplemente reemplace el archivo Excel manteniendo las palabras clave en los encabezados.')
     
     doc.save('DOCUMENTACION_TECNICA.docx')
 

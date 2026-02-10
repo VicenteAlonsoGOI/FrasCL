@@ -1,48 +1,57 @@
-# Documentación Técnica: Proyecto FrasCL
+# Documentación Técnica: Sistema de Automatización FrasCL
 
-Esta documentación detalla la arquitectura, dependencias y lógica interna del sistema de generación de facturas.
+Esta documentación técnica está dirigida a personal de IT o desarrolladores que necesiten realizar mantenimiento o mejoras en el sistema de generación de facturas.
 
-## 🛠️ Tecnologías y Dependencias
+## 1. Arquitectura del Sistema
 
-- **Lenguaje:** Python 3.12+
-- **Librerías principales:**
-  - `pandas`: Manipulación y limpieza de datos desde Excel.
-  - `openpyxl`: Motor de lectura para archivos `.xlsx`.
-  - `reportlab`: Motor de generación de documentos PDF (Platypus).
+El sistema sigue un flujo de procesamiento por lotes (batch processing) lineal:
+1.  **Entrada:** Lectura de archivo Excel (.xlsx) mediante `pandas`.
+2.  **Transformación:** Limpieza de datos (normalización de moneda, fechas y tipos numéricos).
+3.  **Agrupación:** Segmentación de datos por el campo `CLIENTE`.
+4.  **Generación:** Creación de documentos PDF mediante el motor `ReportLab`.
+5.  **Persistencia:** Almacenamiento organizado en carpetas locales y/o de red.
 
-## 📂 Estructura del Proyecto
+## 2. Detalles de Implementación (generar_facturas.py)
 
-- `generar_facturas.py`: Script principal de ejecución.
-- `20260209 BORRADOR FRASCL.xlsx`: Fuente de datos de entrada.
-- `PROYECTO FrasCL/`: Directorio de salida (generado automáticamente).
-- `.gitignore`: Configuración para evitar la subida de datos sensibles o binarios a Git.
+### 2.1 Procesamiento de Moneda (clean_currency)
+Debido a que el Excel fuente contiene importes con el símbolo "€", puntos para miles y comas para decimales, se implementó una lógica de "normalización de strings":
+- Se eliminan espacios en blanco y el símbolo de la moneda.
+- Se elimina el punto `.` (separador de miles).
+- Se sustituye la coma `,` por punto `.` (estándar decimal de Python).
+- Se gestionan valores nulos (`NaN`) devolviendo `0.0` para evitar errores en sumatorios.
 
-## ⚙️ Lógica de Procesamiento
+### 2.2 Gestión de Fechas
+El script gestiona la inconsistencia de formatos en el Excel (ej. `19/01/2026` frente a `29.01.2026`):
+- Se estandariza el separador a `/`.
+- Se utiliza `pd.to_datetime` con `dayfirst=True`.
+- Se genera un string formateado `DD/MM/YYYY` para el reporte final.
 
-### 1. Extracción de Datos
-El script utiliza `pandas` para cargar el Excel. Se realiza una limpieza de los nombres de las columnas para eliminar espacios accidentales.
+### 2.3 Generación de PDF y Layout
+- **Orientation:** Landscape (A4) para maximizar el espacio horizontal de la tabla.
+- **Table Flow:** Se usa `Platypus` (SimpleDocTemplate) para manejar tablas que pueden extenderse a varias páginas.
+- **Word Wrap:** Cada celda está envuelta en un objeto `Paragraph`. Esto permite que el motor de ReportLab calcule el salto de línea automático si el texto excede el ancho de la columna.
+- **Column Widths:** Definidos estáticamente para asegurar la integridad visual (Total ~25.7cm).
 
-### 2. Función `clean_currency`
-Esta función es crítica para la robustez del sistema. Realiza las siguientes transformaciones:
-- Elimina el símbolo `€`.
-- Elimina los puntos `.` (separadores de miles en formato español).
-- Cambia las comas `,` por puntos `.` (separador decimal para Python).
-- Convierte el resultado a `float` para permitir cálculos matemáticos.
+## 3. Lanzador Automatizado (INICIAR_AUTOMATIZACION.bat)
 
-### 3. Gestión de Fechas
-Se implementó un parsing flexible que detecta fechas tanto con separador de barra `/` como de punto `.`. Se utiliza `dayfirst=True` para respetar el formato europeo.
+El lanzador está diseñado para ser totalmente autónomo:
+- **Soporte UNC:** Utiliza `pushd "%~dp0"` para permitir la ejecución desde carpetas de red sin que CMD falle.
+- **Auto-instalación:** Ejecuta `pip install` de forma silenciosa. Si el usuario ya tiene las librerías, el comando no hace nada; si le faltan, las instala antes de lanzar el script.
 
-### 4. Generación de PDF (ReportLab)
-- **Word Wrap:** Se utiliza la clase `Paragraph` dentro de las celdas de la `Table` para permitir que los textos largos salten de línea.
-- **Anchos Fijos:** Se definen anchos de columna estrictos (`col_widths`) para asegurar que la tabla no exceda los márgenes físicos de una hoja A4 en orientación horizontal (landscape).
-- **Estilos:** Se utiliza `TableStyle` para aplicar fondos alternos, encabezados coloreados y el resaltado del sumatorio final.
+## 4. Requisitos de Entorno
 
-## 🔄 Mantenimiento
+- **Python 3.12+**
+- **Librerías:**
+    - `pandas`: Análisis de datos.
+    - `reportlab`: Generación de PDF (profesional).
+    - `openpyxl`: Motor de lectura Excel.
+    - `python-docx`: Generación de manuales en Word.
 
-Para actualizar el programa con un nuevo Excel:
-1. Reemplazar el archivo `.xlsx` antiguo por el nuevo.
-2. Asegurarse de que el nombre del archivo en el código coincide (línea 10 de `generar_facturas.py`).
-3. Ejecutar el script.
+## 5. Mantenimiento y Cambios
+Para cambiar el archivo de entrada, simplemente actualice la variable `excel_file` en la función `generar_pdfs()`. El sistema detectará automáticamente las nuevas columnas siempre que mantengan palabras clave similares (`Cliente`, `Cuantía`, `Exp`, etc.).
+
+---
+*Documentación generada por Antigravity AI - v2.0*
 
 ---
 *Desarrollado por Antigravity AI.*
