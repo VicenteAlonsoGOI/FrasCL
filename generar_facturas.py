@@ -7,7 +7,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 
 def generar_pdfs():
-    excel_file = '20260209 BORRADOR FRASCL.xlsx'
+    excel_file = 'FRASCL.xlsx'
     if not os.path.exists(excel_file):
         print(f"Error: No se encuentra el archivo {excel_file}")
         return

@@ -9,14 +9,14 @@ def create_manual():
     doc.add_heading('Requisitos Previos', level=1)
     p = doc.add_paragraph()
     p.add_run('1. Archivo de Datos: ').bold = True
-    p.add_run('Debes tener el archivo Excel con las facturas en la misma carpeta que el programa. El archivo debe llamarse exactamente: 20260209 BORRADOR FRASCL.xlsx.')
+    p.add_run('Debes tener el archivo Excel con las facturas en la misma carpeta que el programa. El archivo debe llamarse exactamente: FRASCL.xlsx.')
     
     p = doc.add_paragraph()
     p.add_run('2. Preparación del Excel: ').bold = True
     p.add_run('Asegúrate de que el Excel no esté abierto en ese momento para evitar errores de acceso.')
     
     doc.add_heading('Cómo ejecutar el programa', level=1)
-    doc.add_paragraph('1. Abrir la carpeta compartida: Navega en tu explorador de archivos hasta: \\\\srv-gesico\\Proyectos IA Vicente\\PROYECTO FrasCL')
+    doc.add_paragraph('1. Abrir la carpeta del programa: Navega hasta la carpeta en tu ordenador donde hayas guardado o descargado el programa.')
     doc.add_paragraph('2. Ejecutar el proceso: Busca el archivo llamado INICIAR_AUTOMATIZACION.bat. Haz doble clic sobre él. Se abrirá una ventana negra que te informará del progreso.')
     doc.add_paragraph('3. Resultado: El programa creará automáticamente una carpeta llamada Facturas_Generadas. Dentro encontrarás un archivo PDF por cada cliente.')
     
