@@ -5,21 +5,24 @@ echo    INICIANDO PROCESO DE FACTURACION
 echo ==========================================
 echo.
 
-:: Corregion para rutas de red (UNC)
-:: pushd crea una unidad temporal si se ejecuta desde red
+:: Correccion para rutas de red (UNC)
 pushd "%~dp0"
 
 echo 1. Verificando Python...
 where python >nul 2>nul
 if %errorlevel% neq 0 (
-    echo [ERROR] Python no esta instalado en este equipo o no esta en el PATH.
-    echo Por favor, contacta con sistemas o instala Python 3.12.
+    echo [ERROR] Python no esta instalado en este equipo.
+    echo Por favor, instala Python 3.12 desde la Microsoft Store o python.org.
     popd
     pause
     exit /b
 )
 
-echo 2. Iniciando el script...
+echo 2. Verificando librerias necesarias...
+echo (Esto solo tardara unos segundos la primera vez)
+python -m pip install pandas openpyxl reportlab --quiet --no-warn-script-location
+
+echo 3. Iniciando el script...
 python generar_facturas.py
 
 if %errorlevel% neq 0 (
@@ -31,9 +34,7 @@ if %errorlevel% neq 0 (
     echo [EXITO] Informes generados correctamente en la carpeta 'Facturas_Generadas'.
 )
 
-:: Quitar la unidad temporal
 popd
-
 echo.
 echo Presiona cualquier tecla para cerrar esta ventana...
 pause >nul
